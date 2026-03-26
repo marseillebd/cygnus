@@ -11,7 +11,7 @@ enum EolType {
 };
 
 static inline // SLOP this needs to be either extern or static, I guess
-char const* EolType2CStr(EolType eol) {
+const char* EolType2CStr(EolType eol) {
   switch (eol) {
     case Eol_LF: return "LF";
     case Eol_EOF: return "EOF";
@@ -28,7 +28,7 @@ struct Line {
 
 typedef struct Lines Lines;
 Lines* emptyLines();
-void addLine(Lines* lines, Line* const line_in);
+void addLine(Lines* lines, const Line* line_in);
 
 typedef struct LineBuffer LineBuffer;
 LineBuffer* startLines();
@@ -36,9 +36,9 @@ void feedLines(LineBuffer* buf, size_t n, char inp[n]);
 Lines* finishLines(LineBuffer* buf);
 
 typedef struct LineIter LineIter;
-LineIter* iterLines(Lines* const over);
+LineIter* iterLines(const Lines* over);
 // returns NULL when at end of the iterator
-Line const* nextLine(LineIter* iter); // TODO perhaps return a bool and use an out parameter
+const Line* nextLine(LineIter* iter); // TODO perhaps return a bool and use an out parameter
 
 ////// Internal Declarations //////
 
@@ -52,7 +52,7 @@ struct Lines {
 
 struct LineIter {
   size_t blockIx;
-  Lines* curBlock;
+  const Lines* curBlock;
 };
 
 ////// Implementation //////
@@ -63,7 +63,7 @@ struct LineIter {
 #include <assert.h>
 
 static _Noreturn
-void panic(char* const msg) {
+void panic(const char* msg) {
   fprintf(stderr, "%s\n", msg);
   exit(1);
 }
@@ -81,7 +81,7 @@ Lines* emptyLines() {
   return new;
 }
 
-void addLine(Lines* lines, Line* const line_in) {
+void addLine(Lines* lines, const Line* line_in) {
   Lines* last = lines->last;
   assert(last != NULL);
   if (last->used >= LINES_PER_BLOCK) { // we need a new last block
@@ -93,13 +93,13 @@ void addLine(Lines* lines, Line* const line_in) {
   // terse C can read as bad as assembly, and that's why I put the pseudocode in
 }
 
-LineIter* iterLines(Lines* const over) {
+LineIter* iterLines(const Lines* over) {
   LineIter* iter = alloc(sizeof(LineIter));
   iter->blockIx = 0; iter->curBlock = over;
   return iter;
 }
 
-Line const* nextLine(LineIter* iter) {
+const Line* nextLine(LineIter* iter) {
   while (iter->blockIx >= iter->curBlock->used) { // we need to go to the next block
     iter->curBlock = iter->curBlock->next;
     if (iter->curBlock == NULL) { return NULL; } // iterator ends
@@ -191,7 +191,7 @@ int main(int argc, char** argv) {
     {
       printf("# %s\n", path);
       LineIter* iter = iterLines(lines);
-      for (Line const* line = nextLine(iter); line; line = nextLine(iter)) {
+      for (const Line* line = nextLine(iter); line; line = nextLine(iter)) {
         printf("%zu %zu %s\n", line->fileOffset, line->contentLen, EolType2CStr(line->eol));
       }
     }
