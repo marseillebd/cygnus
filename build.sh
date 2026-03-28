@@ -13,7 +13,7 @@ BUILDDIR="${BUILDDIR:-$projdir/.build}"
 DISTDIR="${DISTDIR:-$projdir/dist}"
 SRCDISTDIR="${DISTDIR:-$projdir/srcdist}"
 
-build() #
+build() # TODO [--profile <dev|dist>] <lib|dynlib|exe|doc>...
 {
   [ -e "$BUILDDIR" ] && rm -r "$BUILDDIR"
   mkdir -p "$BUILDDIR"
@@ -26,11 +26,20 @@ build() #
      -xc "$SRCDIR/cygnus.h" -o "$BUILDDIR/cygnus.so"
   "$CC" $CFLAGS \
      "$BUILDDIR/cygnus.o" -o "$BUILDDIR/cygnus"
-   grep '^[/ ]\*\*\([ /]\|$\)' "$SRCDIR/cygnus.h" \
-     | sed -e 's/^[/ ]\*\*\([ /]\|$\)//' \
+  build__docre='^[/ ]\*\*\([ /]\|$\)'
+  build__cdocre='/\*\*!.*'
+  grep "$build__docre"'\|'"$build__cdocre" "$SRCDIR/cygnus.h" \
+     | sed -e 's@^[/ ]\*\*\([ /]\|$\)@@' \
+     -e 's@^\s*\(.*\)/\*\*!\(.*\)\*//\*\(.*\)\*/.*$@\2`\1`\3@' \
      > "$BUILDDIR/cygnus.md"
   # SLOP: compile/link/mklib/documentation outputs
   # SLOP: configurable targets
+}
+
+run() #
+{
+  build
+  "./$BUILDDIR/cygnus"
 }
 
 dist() #
