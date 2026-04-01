@@ -78,7 +78,7 @@ struct Bytes {
 typedef struct ByteSlc ByteSlc;/**!*//**/
 struct ByteSlc {
   size_t len/**!- field *//*: length of the byte string*/;
-  char* buf/**!- field *//*: **borrowed** pointer to arbitrary bytes*/;
+  const char* buf/**!- field *//*: **borrowed** pointer to arbitrary bytes*/;
 /**   At least `.len` bytes must be valid memory.
  **   Owned pointers should use the `Bytes` type or similar.
  **/
